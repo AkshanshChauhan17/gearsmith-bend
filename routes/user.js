@@ -73,8 +73,11 @@ userRouter.post('/login', (req, res) => {
 
     executeQuery("SELECT * FROM user WHERE email=?", [email])
         .then(async(result) => {
+            if (result.length == 0) {
+                return res.status(400).json({ loginStatus: false, token: null });
+            }
             const passwordMatch = await bcrypt.compare(password, result[0].password);
-            console.log(passwordMatch)
+            console.log(result)
             if (!passwordMatch) {
                 return res.status(401).json({ message: 'Invalid Username and Password' });
             }
@@ -82,12 +85,14 @@ userRouter.post('/login', (req, res) => {
             const token = jwt.sign({ email: result[0].email, password: result[0].password }, 'my_key_1000', { expiresIn: '24h' });
             await executeQuery("UPDATE user SET token=? WHERE email=? AND password=?", [token, email, password])
                 .then(() => {
-                    res.status(200).json(token);
+                    res.status(200).json({ loginStatus: true, token: token });
                 }).catch((error) => {
-                    return res.json({ "error:": error });
+                    console.log(error)
+                    return res.json({ "1 error:": error });
                 });
         }).catch((error) => {
-            return res.json({ "error:": error });
+            console.log(error)
+            return res.json({ "2 error:": error });
         });
 })
 
