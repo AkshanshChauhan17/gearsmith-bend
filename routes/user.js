@@ -1,5 +1,7 @@
 import executeQuery from '../database/query.js';
 import express from 'express';
+import bcrypt from 'bcryptjs';
+import jwt, { decode } from 'jsonwebtoken';
 
 const userRouter = express.Router();
 
@@ -14,14 +16,109 @@ userRouter.get('/', (req, res) => {
 
 // --------------- This is Authentication section --------------- 
 
-userRouter.get('/:email', (req, res) => {
-    const { email } = req.params;
-    executeQuery("SELECT * FROM user WHERE id=?", [email])
-        .then((result) => {
-            return res.json(result);
+function getUserByEmail(email) {
+    return new Promise((resolve, reject) => {
+        executeQuery('SELECT * FROM user WHERE email = ?', [email])
+            .then((result) => resolve(result))
+            .catch((err) => reject(err));
+    });
+};
+
+function createUser(email, password, meta, token) {
+    console.log(token)
+    return new Promise((resolve, reject) => {
+        executeQuery('INSERT INTO user (email, password, meta, token) VALUES (?, ?, ?, ?)', [email, password, JSON.stringify(meta), token])
+            .then((result) => resolve(result))
+            .catch((error) => reject(error));
+    });
+};
+
+function verifyToken(email, password) {
+    return new Promise((resolve, reject) => {
+        executeQuery("SELECT * FROM user WHERE email=? AND password=?", [email, password])
+            .then((result) => resolve({ message: 'Authorized', result }))
+            .catch((error) => reject(error));
+    });
+}
+
+function authenticateToken(req, res, next) {
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    jwt.verify(token, 'my_key_1000', (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        req.email = decoded.email;
+        req.password = decoded.password;
+        next();
+    });
+};
+
+userRouter.get('/token/profile', authenticateToken, async(req, res) => {
+    const isTokenVerified = await verifyToken(req.email, req.password);
+    res.json(isTokenVerified);
+});
+
+userRouter.post('/login', (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: "Username and Password are Required" });
+    }
+
+    executeQuery("SELECT * FROM user WHERE email=?", [email])
+        .then(async(result) => {
+            const passwordMatch = await bcrypt.compare(password, result[0].password);
+            console.log(passwordMatch)
+            if (!passwordMatch) {
+                return res.status(401).json({ message: 'Invalid Username and Password' });
+            }
+
+            const token = jwt.sign({ email: result[0].email, password: result[0].password }, 'my_key_1000', { expiresIn: '24h' });
+            await executeQuery("UPDATE user SET token=? WHERE email=? AND password=?", [token, email, password])
+                .then(() => {
+                    res.status(200).json(token);
+                }).catch((error) => {
+                    return res.json({ "error:": error });
+                });
         }).catch((error) => {
-            return res.json(error);
+            return res.json({ "error:": error });
         });
+})
+
+userRouter.post('/signin', async(req, res) => {
+    const { email, password, meta } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: "Username and Password are Required" });
+    }
+
+    try {
+        const existingEmail = await getUserByEmail(email);
+        if (existingEmail.length > 0) {
+            return res.status(400).json({ message: 'Username Already Exists' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const token = jwt.sign({ email: email, password: hashedPassword }, 'my_key_1000', { expiresIn: '24h' });
+        const result = await createUser(email, hashedPassword, meta, token);
+
+        res.status(201).json({ message: 'User registered successfully', token });
+    } catch (error) {
+        console.error('Error registering user: ', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+})
+
+userRouter.get('/email/:email', async(req, res) => {
+    const { email } = req.params;
+    const result = await getUserByEmail(email);
+    res.status(200).json(result)
 });
 
 userRouter.get('/add/:email/:password', (req, res) => {
