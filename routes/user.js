@@ -35,7 +35,7 @@ function createUser(email, password, meta, token) {
 
 function verifyToken(email, password) {
     return new Promise((resolve, reject) => {
-        executeQuery("SELECT * FROM user WHERE email=? AND password=?", [email, password])
+        executeQuery("SELECT email, meta FROM user WHERE email=? AND password=?", [email, password])
             .then((result) => resolve({ message: 'Authorized', result }))
             .catch((error) => reject(error));
     });
@@ -110,9 +110,9 @@ userRouter.post('/signin', async(req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const token = jwt.sign({ email: email, password: hashedPassword }, 'my_key_1000', { expiresIn: '24h' });
-        const result = await createUser(email, hashedPassword, meta, token);
+        await createUser(email, hashedPassword, meta, token);
 
-        res.status(201).json({ message: 'User registered successfully', token });
+        res.status(201).json({ message: 'User registered successfully', token: token });
     } catch (error) {
         console.error('Error registering user: ', error);
         res.status(500).json({ message: 'Internal Server Error' });
