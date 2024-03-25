@@ -68,18 +68,17 @@ userRouter.post('/login', (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({ message: "Username and Password are Required" });
+        return res.status(400).json({ loginStatus: false, message: "Username and Password are Required" });
     }
 
     executeQuery("SELECT * FROM user WHERE email=?", [email])
         .then(async(result) => {
             if (result.length == 0) {
-                return res.status(400).json({ loginStatus: false, token: null });
+                return res.status(400).json({ loginStatus: false, message: 'No User Found with ' + email + ' Please Register' });
             }
             const passwordMatch = await bcrypt.compare(password, result[0].password);
-            console.log(result)
             if (!passwordMatch) {
-                return res.status(401).json({ message: 'Invalid Username and Password' });
+                return res.status(401).json({ loginStatus: false, message: 'Invalid Username and Password' });
             }
 
             const token = jwt.sign({ email: result[0].email, password: result[0].password }, 'my_key_1000', { expiresIn: '24h' });
@@ -87,12 +86,12 @@ userRouter.post('/login', (req, res) => {
                 .then(() => {
                     res.status(200).json({ loginStatus: true, token: token });
                 }).catch((error) => {
-                    console.log(error)
-                    return res.json({ "1 error:": error });
+                    console.log(error);
+                    return res.json({ loginStatus: false, message: error });
                 });
         }).catch((error) => {
             console.log(error)
-            return res.json({ "2 error:": error });
+            return res.json({ loginStatus: false, message: error });
         });
 })
 
