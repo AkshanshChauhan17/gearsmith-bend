@@ -84,7 +84,7 @@ userRouter.post('/login', (req, res) => {
             const token = jwt.sign({ email: result[0].email, password: result[0].password }, 'my_key_1000', { expiresIn: '24h' });
             await executeQuery("UPDATE user SET token=? WHERE email=? AND password=?", [token, email, password])
                 .then(() => {
-                    res.status(200).json({ loginStatus: true, token: token });
+                    res.status(200).json({ loginStatus: true, message: "Login Successful", token: token });
                 }).catch((error) => {
                     console.log(error);
                     return res.json({ loginStatus: false, message: error });
