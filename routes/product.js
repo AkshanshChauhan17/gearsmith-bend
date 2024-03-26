@@ -6,7 +6,7 @@ import multer from "multer";
 const productRouter = express.Router();
 
 productRouter.get('/', (req, res) => {
-    executeQuery("SELECT * FROM products WHERE 1", [])
+    executeQuery("SELECT * FROM product WHERE 1", [])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
@@ -15,7 +15,7 @@ productRouter.get('/', (req, res) => {
 });
 
 productRouter.get('/new_arrive', (req, res) => {
-    executeQuery("SELECT * FROM products ORDER BY id DESC LIMIT 10", [])
+    executeQuery("SELECT * FROM product ORDER BY id DESC LIMIT 10", [])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
@@ -26,7 +26,7 @@ productRouter.get('/new_arrive', (req, res) => {
 productRouter.get('/:product_name', (req, res) => {
     const { product_name } = req.params;
 
-    executeQuery("SELECT * FROM products WHERE name=?", [product_name])
+    executeQuery("SELECT * FROM product WHERE name=?", [product_name])
         .then((result) => {
             return res.json(...result);
         }).catch((error) => {
@@ -38,7 +38,7 @@ productRouter.post('/add_product', (req, res) => {
     const product_id = uuidV4();
     const { name, media, price, color_list, size_list, product_summary } = req.body;
 
-    executeQuery("INSERT INTO products (name, media, price, product_id, color_list, size_list, product_summary) VALUES (?, ?, ?, ?, ?, ?, ?)", [name, JSON.stringify(media), price, product_id, JSON.stringify(color_list), JSON.stringify(size_list), product_summary])
+    executeQuery("INSERT INTO product (name, media, price, product_id, color_list, size_list, product_summary) VALUES (?, ?, ?, ?, ?, ?, ?)", [name, JSON.stringify(media), price, product_id, JSON.stringify(color_list), JSON.stringify(size_list), product_summary])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
@@ -49,7 +49,7 @@ productRouter.post('/add_product', (req, res) => {
 productRouter.delete('/remove_product', (req, res) => {
     const { product_id } = req.body;
 
-    executeQuery("DELETE FROM products WHERE product_id=?", [product_id])
+    executeQuery("DELETE FROM product WHERE product_id=?", [product_id])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
@@ -60,7 +60,7 @@ productRouter.delete('/remove_product', (req, res) => {
 productRouter.patch('/edit_product', (req, res) => {
     const { name, media, price, color_list, size_list, product_summary, product_id } = req.body;
 
-    executeQuery("UPDATE products SET name=?, media=?, price=?, color_list=?, size_list=?, product_summary=? WHERE product_id=?", [name, JSON.stringify(media), price, JSON.stringify(color_list), JSON.stringify(size_list), product_summary, product_id])
+    executeQuery("UPDATE product SET name=?, media=?, price=?, color_list=?, size_list=?, product_summary=? WHERE product_id=?", [name, JSON.stringify(media), price, JSON.stringify(color_list), JSON.stringify(size_list), product_summary, product_id])
         .then(() => {
             executeQuery("UPDATE product_media SET product_name=? WHERE product_id=?", [name, product_id])
                 .then((result) => {
@@ -129,7 +129,7 @@ productRouter.post('/fetch_media_into_product', (req, res) => {
 
     executeQuery("SELECT image_src FROM product_media WHERE product_id=?", [product_id])
         .then((media_res) => {
-            executeQuery("UPDATE products SET media=? WHERE product_id=?", [JSON.stringify(media_res), product_id])
+            executeQuery("UPDATE product SET media=? WHERE product_id=?", [JSON.stringify(media_res), product_id])
                 .then((result) => {
                     return res.json(result);
                 }).catch((error) => {
