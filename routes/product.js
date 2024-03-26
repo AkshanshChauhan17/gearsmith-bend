@@ -62,7 +62,7 @@ productRouter.patch('/edit_product', (req, res) => {
 
     executeQuery("UPDATE products SET name=?, media=?, price=?, color_list=?, size_list=?, product_summary=? WHERE product_id=?", [name, JSON.stringify(media), price, JSON.stringify(color_list), JSON.stringify(size_list), product_summary, product_id])
         .then(() => {
-            executeQuery("UPDATE gearsmith.product_media SET product_name=? WHERE product_id=?", [name, product_id])
+            executeQuery("UPDATE product_media SET product_name=? WHERE product_id=?", [name, product_id])
                 .then((result) => {
                     return res.json(result);
                 }).catch((error) => {
@@ -94,7 +94,7 @@ productRouter.post('/add_product_image', upload.single('image'), (req, res) => {
         });
     }
 
-    executeQuery("INSERT INTO gearsmith.product_media (product_name, product_id, product_media.image_src) VALUES (?, ?, ?)", [product_name, product_id, req.file.filename])
+    executeQuery("INSERT INTO product_media (product_name, product_id, image_src) VALUES (?, ?, ?)", [product_name, product_id, req.file.filename])
         .then((result) => {
             return res.json({
                 message: "File Uploaded Successfully",

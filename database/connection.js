@@ -3,7 +3,7 @@ import mysql from "mysql";
 var connection = mysql.createConnection({
     host: "localhost",
     user: "root",
-    database: "gearsmith"
+    database: "gsmith"
 });
 
 export default connection;
