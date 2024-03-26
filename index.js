@@ -17,7 +17,7 @@ const __dirname = dirname(fileURLToPath(
 api.use('/static', express.static(path.join(__dirname, 'upload')));
 
 api.use(express.urlencoded({ extended: true }));
-api.use(express.json());
+api.use(express.json({ limit: "80mb" }));
 api.use(cors());
 
 api.use('/user', userRouter);
