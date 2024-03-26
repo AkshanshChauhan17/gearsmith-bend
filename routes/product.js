@@ -114,6 +114,16 @@ productRouter.get('/image', (req, res) => {
         });
 });
 
+// productRouter.get('/image/:product_name', (req, res) => {
+//     const { product_name } = req.params;
+//     executeQuery("SELECT CONCAT('upload/product/media/', image_src) as url FROM product_media WHERE product_name=?", [product_name])
+//         .then((result) => {
+//             return res.json(result);
+//         }).catch((error) => {
+//             return res.json(error);
+//         });
+// });
+
 productRouter.get('/image/:product_name', (req, res) => {
     const { product_name } = req.params;
     executeQuery("SELECT CONCAT('upload/product/media/', image_src) as url FROM product_media WHERE product_name=?", [product_name])
