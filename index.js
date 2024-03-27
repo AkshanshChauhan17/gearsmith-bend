@@ -8,6 +8,7 @@ import mediaRouter from './routes/media.js';
 import path from 'path';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import reviewRouter from './routes/review.js';
 
 var api = express();
 
@@ -24,6 +25,7 @@ api.use('/user', userRouter);
 api.use('/navigation', navigationRouter);
 api.use('/product', productRouter);
 api.use('/media', mediaRouter);
+api.use('/review', reviewRouter);
 
 api.listen(1000, () => {
     console.log('Server Started At 1000');

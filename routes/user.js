@@ -1,7 +1,8 @@
 import executeQuery from '../database/query.js';
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import jwt, { decode } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
+import { v4 as uuidV4 } from 'uuid';
 
 const userRouter = express.Router();
 
@@ -25,9 +26,9 @@ function getUserByEmail(email) {
 };
 
 function createUser(email, password, meta, token) {
-    console.log(token)
+    const user_id = uuidV4();
     return new Promise((resolve, reject) => {
-        executeQuery('INSERT INTO user (email, password, meta, token) VALUES (?, ?, ?, ?)', [email, password, JSON.stringify(meta), token])
+        executeQuery('INSERT INTO user (email, password, meta, token, user_id) VALUES (?, ?, ?, ?, ?)', [email, password, JSON.stringify(meta), token, user_id])
             .then((result) => resolve(result))
             .catch((error) => reject(error));
     });
