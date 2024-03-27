@@ -23,9 +23,9 @@ productRouter.get('/new_arrive', (req, res) => {
         });
 });
 
-productRouter.get('/:product_name', (req, res) => {
-    const { product_name } = req.params;
-    executeQuery("SELECT * FROM product WHERE name=?", [product_name])
+productRouter.get('/:product_id', (req, res) => {
+    const { product_id } = req.params;
+    executeQuery("SELECT * FROM product WHERE product_id=?", [product_id])
         .then((result) => {
             return res.json(...result);
         }).catch((error) => {
@@ -35,7 +35,7 @@ productRouter.get('/:product_name', (req, res) => {
 
 productRouter.get('/get_from_cart/:email', (req, res) => {
     const { email } = req.params;
-    executeQuery("SELECT user_id FROM user WHERE email=?", [email])
+    executeQuery("SELECT user_id, quantity FROM user WHERE email=?", [email])
         .then((user_res) => {
             executeQuery("SELECT product_id FROM user_cart WHERE user_id=?", [user_res[0].user_id])
                 .then((user_cart_res) => {
