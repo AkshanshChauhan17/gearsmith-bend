@@ -49,20 +49,31 @@ productRouter.get('/get_from_cart/:email', (req, res) => {
 })
 
 productRouter.post('/add_to_cart', (req, res) => {
-    const { user_id, product_id, quantity } = req.body;
-    executeQuery("INSERT INTO user_cart (user_id, product_id, quantity) VALUES (?, ?, ?)", [user_id, product_id, quantity])
-        .then((result) => {
-            return res.json(result);
+    const { email, product_id, quantity } = req.body;
+    executeQuery("SELECT user_id FROM user WHERE email=?", [email])
+        .then((user_res) => {
+            console.log(user_res)
+            executeQuery("INSERT INTO user_cart (user_id, product_id, quantity) VALUES (?, ?, ?)", [user_res[0].user_id, product_id, quantity])
+                .then((result) => {
+                    return res.json(result);
+                }).catch((error) => {
+                    return res.json(error);
+                });
         }).catch((error) => {
             return res.json(error);
         });
 });
 
 productRouter.delete('/remove_from_cart', (req, res) => {
-    const { user_id, product_id } = req.body;
-    executeQuery("DELETE FROM user_cart WHERE user_id=? AND product_id=?", [user_id, product_id])
-        .then((result) => {
-            return res.json(result);
+    const { email, product_id } = req.body;
+    executeQuery("SELECT user_id FROM user WHERE email=?", [email])
+        .then((user_res) => {
+            executeQuery("DELETE FROM user_cart WHERE user_id=? AND product_id=?", [user_res[0].user_id, product_id])
+                .then((result) => {
+                    return res.json(result);
+                }).catch((error) => {
+                    return res.json(error);
+                });
         }).catch((error) => {
             return res.json(error);
         });
