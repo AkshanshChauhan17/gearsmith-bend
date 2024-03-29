@@ -1,13 +1,9 @@
 import express from "express";
 import sharp from "sharp";
 import fs from "fs";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
 
 const mediaRouter = express.Router();
 
-const __dirname = dirname(fileURLToPath(
-    import.meta.url));
 
 async function resizeImageToBase64(imagePath, width, height) {
     const imageBuffer = fs.readFileSync(imagePath);
