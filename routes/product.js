@@ -37,7 +37,7 @@ productRouter.get('/get_from_cart/:email', (req, res) => {
     const { email } = req.params;
     executeQuery("SELECT user_id FROM user WHERE email=?", [email])
         .then((user_res) => {
-            executeQuery("SELECT product_id, quantity FROM user_cart WHERE user_id=?", [user_res[0].user_id])
+            executeQuery("SELECT product_id, quantity, size, color FROM user_cart WHERE user_id=?", [user_res[0].user_id])
                 .then((user_cart_res) => {
                     return res.json(user_cart_res);
                 }).catch((error) => {
@@ -49,11 +49,11 @@ productRouter.get('/get_from_cart/:email', (req, res) => {
 })
 
 productRouter.post('/add_to_cart', (req, res) => {
-    const { email, product_id, quantity } = req.body;
+    const { email, product_id, quantity, size, color } = req.body;
     executeQuery("SELECT user_id FROM user WHERE email=?", [email])
         .then((user_res) => {
             console.log(user_res)
-            executeQuery("INSERT INTO user_cart (user_id, product_id, quantity) VALUES (?, ?, ?)", [user_res[0].user_id, product_id, quantity])
+            executeQuery("INSERT INTO user_cart (user_id, product_id, quantity, size, color) VALUES (?, ?, ?, ?, ?)", [user_res[0].user_id, product_id, quantity, size, color])
                 .then((result) => {
                     return res.json(result);
                 }).catch((error) => {
