@@ -9,6 +9,7 @@ import path from 'path';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import reviewRouter from './routes/review.js';
+import orderRouter from './routes/order.js';
 
 var api = express();
 
@@ -26,6 +27,7 @@ api.use('/navigation', navigationRouter);
 api.use('/product', productRouter);
 api.use('/media', mediaRouter);
 api.use('/review', reviewRouter);
+api.use('/order', orderRouter);
 
 api.listen(1000, () => {
     console.log('Server Started At 1000');
