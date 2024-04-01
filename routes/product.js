@@ -15,7 +15,7 @@ productRouter.get('/', (req, res) => {
 });
 
 productRouter.get('/new_arrive', (req, res) => {
-    executeQuery("SELECT * FROM product ORDER BY id DESC LIMIT 10", [])
+    executeQuery("SELECT * FROM product ORDER BY id DESC LIMIT 5", [])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
