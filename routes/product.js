@@ -238,17 +238,18 @@ productRouter.get('/rate/percentage/:product_id', (req, res) => {
                 ratingCounts[r.rating]++;
             });
 
-            const totalRatings = result.length;
-
             const newRatingPercentage = {
-                five_star: Math.round((ratingCounts["5"] / totalRatings) * 100),
-                four_star: Math.round((ratingCounts["4"] / totalRatings) * 100),
-                three_star: Math.round((ratingCounts["3"] / totalRatings) * 100),
-                two_star: Math.round((ratingCounts["2"] / totalRatings) * 100),
-                one_star: Math.round((ratingCounts["1"] / totalRatings) * 100)
+                five_star: Math.round(ratingCounts["5"]),
+                four_star: Math.round(ratingCounts["4"]),
+                three_star: Math.round(ratingCounts["3"]),
+                two_star: Math.round(ratingCounts["2"]),
+                one_star: Math.round(ratingCounts["1"])
             };
 
-            res.json(newRatingPercentage);
+            const averageRatingSum = newRatingPercentage.five_star + newRatingPercentage.four_star + newRatingPercentage.three_star + newRatingPercentage.two_star + newRatingPercentage.one_star
+            const averageRatingPercentage = Math.round(5 * ((newRatingPercentage.five_star / averageRatingSum) * 100) + 4 * ((newRatingPercentage.two_star / averageRatingSum) * 100) + 3 * ((newRatingPercentage.three_star / averageRatingSum) * 100) + 2 * ((newRatingPercentage.four_star / averageRatingSum) * 100) + 1 * ((newRatingPercentage.one_star / averageRatingSum) * 100)) / 100
+
+            res.json({ newRatingPercentage, averageRating: averageRatingPercentage });
         })
         .catch((error) => {
             console.error("Error fetching ratings:", error);
