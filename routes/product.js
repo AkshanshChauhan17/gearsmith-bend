@@ -222,4 +222,38 @@ productRouter.get('/rate/:product_id', (req, res) => {
         });
 });
 
+productRouter.get('/rate/percentage/:product_id', (req, res) => {
+    const { product_id } = req.params;
+    executeQuery("SELECT * FROM product_rating WHERE product_id=?", [product_id])
+        .then((result) => {
+            const ratingCounts = {
+                "1": 0,
+                "2": 0,
+                "3": 0,
+                "4": 0,
+                "5": 0
+            };
+
+            result.forEach((r, i) => {
+                ratingCounts[r.rating]++;
+            });
+
+            const totalRatings = result.length;
+
+            const newRatingPercentage = {
+                five_star: Math.round((ratingCounts["5"] / totalRatings) * 100),
+                four_star: Math.round((ratingCounts["4"] / totalRatings) * 100),
+                three_star: Math.round((ratingCounts["3"] / totalRatings) * 100),
+                two_star: Math.round((ratingCounts["2"] / totalRatings) * 100),
+                one_star: Math.round((ratingCounts["1"] / totalRatings) * 100)
+            };
+
+            res.json(newRatingPercentage);
+        })
+        .catch((error) => {
+            console.error("Error fetching ratings:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        });
+});
+
 export default productRouter;
