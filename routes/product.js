@@ -5,13 +5,20 @@ import multer from "multer";
 
 const productRouter = express.Router();
 
-productRouter.get('/', (req, res) => {
-    executeQuery("SELECT * FROM product WHERE 1", [])
-        .then((result) => {
-            return res.json(result);
-        }).catch((error) => {
-            return res.json(error);
-        });
+productRouter.get('/', async(req, res) => {
+    const page = req.query.page || 1;
+    const page_size = 10;
+    const offset = (page - 1) * page_size;
+    executeQuery("SELECT * FROM product").then((total) => {
+        executeQuery("SELECT * FROM product WHERE 1 LIMIT ?, ? ", [offset, page_size])
+            .then((result) => {
+                return res.json({ data: result, total: Math.round(total.length / page_size) });
+            }).catch((error) => {
+                return res.json(error);
+            });
+    }).catch((error) => {
+        return res.json(error);
+    });
 });
 
 productRouter.get('/new_arrive', (req, res) => {
@@ -190,6 +197,26 @@ productRouter.post('/fetch_media_into_product', (req, res) => {
                 }).catch((error) => {
                     return res.json(error);
                 });
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+productRouter.post('/rate', (req, res) => {
+    const { rating, user_email, comment, product_id, image } = req.body;
+    executeQuery("INSERT INTO product_rating (rating, user_email, comment, product_id, rating_image) VALUES (?, ?, ?, ?, ?)", [rating, user_email, comment, product_id, image])
+        .then((result) => {
+            return res.json(result)
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+productRouter.get('/rate/:product_id', (req, res) => {
+    const { product_id } = req.params;
+    executeQuery("SELECT * FROM product_rating WHERE product_id=?", [product_id])
+        .then((result) => {
+            return res.json(result)
         }).catch((error) => {
             return res.json(error);
         });
