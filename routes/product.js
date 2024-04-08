@@ -213,7 +213,7 @@ productRouter.post('/rate', (req, res) => {
 });
 
 productRouter.get('/rate', (req, res) => {
-    executeQuery("SELECT * FROM product_rating WHERE 1")
+    executeQuery("SELECT * FROM product_rating WHERE 1", [])
         .then((result) => {
             return res.json(result)
         }).catch((error) => {
