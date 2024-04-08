@@ -212,10 +212,17 @@ productRouter.post('/rate', (req, res) => {
         });
 });
 
-productRouter.get('/rate/all', (req, res) => {
-    executeQuery("SELECT * FROM product_rating JOIN product WHERE product_rating.product_id = product.product_id", [])
+productRouter.get('/rate/all/:page', (req, res) => {
+    var page = parseInt(req.params.page) || 0;
+    page = page * 10;
+    const offset = page + 10
+    executeQuery("SELECT product_rating.*, product.name, product.media FROM product_rating JOIN product WHERE product_rating.product_id = product.product_id LIMIT ?, ?", [page, offset])
         .then((result) => {
-            return res.json(result)
+            res.json(result.map((d) => {
+                d.media = JSON.parse(d.media)[0].small
+                d.count = result.length
+                return d
+            }))
         }).catch((error) => {
             return res.json(error);
         });
