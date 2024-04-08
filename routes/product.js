@@ -212,6 +212,15 @@ productRouter.post('/rate', (req, res) => {
         });
 });
 
+productRouter.get('/rate', (req, res) => {
+    executeQuery("SELECT * FROM product_rating WHERE 1")
+        .then((result) => {
+            return res.json(result)
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
 productRouter.get('/rate/:product_id', (req, res) => {
     const { product_id } = req.params;
     executeQuery("SELECT * FROM product_rating WHERE product_id=?", [product_id])
