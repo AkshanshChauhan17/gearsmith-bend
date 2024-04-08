@@ -12,7 +12,13 @@ productRouter.get('/', async(req, res) => {
     executeQuery("SELECT * FROM product").then((total) => {
         executeQuery("SELECT * FROM product WHERE 1 LIMIT ?, ? ", [offset, page_size])
             .then((result) => {
-                return res.json({ data: result, total: Math.round(total.length / page_size) });
+                return res.json({
+                    data: result.map((d) => {
+                        d.media = JSON.parse(d.media)[0].medium
+                        return d
+                    }),
+                    total: Math.round(total.length / page_size)
+                });
             }).catch((error) => {
                 return res.json(error);
             });
@@ -24,7 +30,10 @@ productRouter.get('/', async(req, res) => {
 productRouter.get('/new_arrive', (req, res) => {
     executeQuery("SELECT * FROM product ORDER BY id DESC LIMIT 5", [])
         .then((result) => {
-            return res.json(result);
+            return res.json(result.map((d) => {
+                d.media = JSON.parse(d.media)[0].medium;
+                return d;
+            }));
         }).catch((error) => {
             return res.json(error);
         });
