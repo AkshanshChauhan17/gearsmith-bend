@@ -52,4 +52,19 @@ orderRouter.post('/capture_payment', async(req, res) => {
     };
 });
 
+orderRouter.get('/checkout_data/:token', (req, res) => {
+    const { token } = req.params;
+    executeQuery("SELECT user_email FROM user WHERE token=?", [token])
+        .then((user_res) => {
+            executeQuery("SELECT product_id, quantity, size, color, price FROM user_cart WHERE user_id=?", [user_res[0].user_id])
+                .then((user_cart_res) => {
+                    return res.json(user_cart_res);
+                }).catch((error) => {
+                    return res.json(error);
+                });
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
 export default orderRouter;
