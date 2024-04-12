@@ -49,6 +49,19 @@ productRouter.get('/:product_id', (req, res) => {
         });
 });
 
+productRouter.get('/cart/:product_id', (req, res) => {
+    const { product_id } = req.params;
+    executeQuery("SELECT * FROM product WHERE product_id=?", [product_id])
+        .then((result) => {
+            return res.json(result.map((d) => {
+                d.media = JSON.parse(d.media)[0].small
+                return d
+            }));
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
 productRouter.get('/get_from_cart/:email', (req, res) => {
     const { email } = req.params;
     executeQuery("SELECT user_id FROM user WHERE email=?", [email])
