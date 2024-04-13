@@ -18,12 +18,27 @@ function verifySignature(signature, secret, payload) {
     return signature === generatedSignature;
 }
 
+orderRouter.get('/user/:token', (req, res) => {
+    const { token } = req.params;
+    executeQuery("SELECT user_id FROM user WHERE token=?", [token])
+        .then((user_res) => {
+            executeQuery("SELECT * FROM all_order WHERE user_id=?", [user_res[0].user_id])
+                .then((order_res) => {
+                    res.json(order_res);
+                }).catch((err) => {
+                    return res.status(500).json(err);
+                });
+        }).catch((err) => {
+            return res.status(500).json(err);
+        });
+});
+
 orderRouter.post('/create_order', async(req, res) => {
     const { userToken, user_address } = req.body;
     var receipt = v4();
     await executeQuery("SELECT user_id, meta FROM user WHERE token=?", [userToken])
         .then(async(user_res) => {
-            await executeQuery("SELECT SUM(price * quantity) AS total_cost, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('product_id', product_id)), ']') AS product_list FROM user_cart WHERE user_id=?", [user_res[0].user_id])
+            await executeQuery("SELECT SUM(price * quantity) AS total_cost, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('product_id', product_id, 'quantity', quantity, 'price', price)), ']') AS product_list FROM user_cart WHERE user_id=?", [user_res[0].user_id])
                 .then(async(user_cart_res) => {
                     if (user_cart_res[0].total_cost < 1) {
                         return res.status(500).json({ message: "Failed to make order" });
@@ -45,7 +60,11 @@ orderRouter.post('/create_order', async(req, res) => {
                         }).catch((err) => {
                             return res.status(500).json(err)
                         })
+                }).catch((err) => {
+                    return res.status(500).json(err)
                 })
+        }).catch((err) => {
+            return res.status(500).json(err)
         })
 });
 
