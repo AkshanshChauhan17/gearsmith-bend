@@ -6,10 +6,27 @@ import { v4 as uuidV4 } from 'uuid';
 
 const userRouter = express.Router();
 
+function base64ToBlob(base64String, contentType) {
+    const parts = base64String.split(';base64,');
+    const type = parts[0].split(':')[1];
+
+    const byteCharacters = atob(parts[1]);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+
+    return new Blob([byteArray], { type: contentType || type });
+}
+
 userRouter.get('/', (req, res) => {
     executeQuery("SELECT * FROM user WHERE 1", [])
         .then((result) => {
-            return res.json(result);
+            return res.json(result.map((d) => {
+                d.meta = JSON.parse(d.meta);
+                return d;
+            }));
         }).catch((error) => {
             return res.json(error);
         });
@@ -78,12 +95,13 @@ userRouter.post('/login', (req, res) => {
                 return res.status(400).json({ loginStatus: false, message: 'No User Found with ' + email + ' Please Register' });
             }
             const passwordMatch = await bcrypt.compare(password, result[0].password);
+            console.log(passwordMatch)
             if (!passwordMatch) {
                 return res.status(401).json({ loginStatus: false, message: 'Invalid Username and Password' });
             }
 
             const token = jwt.sign({ email: result[0].email, password: result[0].password }, 'my_key_1000', { expiresIn: '24h' });
-            await executeQuery("UPDATE user SET token=? WHERE email=? AND password=?", [token, email, password])
+            await executeQuery("UPDATE user SET token=? WHERE email=? AND password=?", [token, email, result[0].password])
                 .then(() => {
                     res.status(200).json({ loginStatus: true, message: "Login Successful", token: token });
                 }).catch((error) => {
