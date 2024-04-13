@@ -25,6 +25,9 @@ orderRouter.post('/create_order', async(req, res) => {
         .then(async(user_res) => {
             await executeQuery("SELECT SUM(price * quantity) AS total_cost, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('product_id', product_id)), ']') AS product_list FROM user_cart WHERE user_id=?", [user_res[0].user_id])
                 .then(async(user_cart_res) => {
+                    if (user_cart_res[0].total_cost < 1) {
+                        return res.status(500).json({ message: "Failed to make order" });
+                    }
                     const options = {
                         amount: user_cart_res[0].total_cost * 100,
                         currency: 'INR',
@@ -38,7 +41,6 @@ orderRouter.post('/create_order', async(req, res) => {
                     };
                     executeQuery("INSERT INTO all_order (product_list, user_id, order_id, total_cost, user_address, user_meta) VALUES (?, ?, ?, ?, ?, ?)", [user_cart_res[0].product_list, user_res[0].user_id, order.id, user_cart_res[0].total_cost, user_address, user_res[0].meta])
                         .then((order_res) => {
-                            console.log(user_cart_res[0].product_list, user_res[0].user_id, order.id, user_cart_res[0].total_cost, user_address, user_res[0].meta)
                             return res.status(200).json(order)
                         }).catch((err) => {
                             return res.status(500).json(err)
@@ -56,10 +58,12 @@ orderRouter.post('/capture_payment', async(req, res) => {
         if (isSignatureValid) {
             executeQuery("SELECT user_id FROM user WHERE token=?", [userToken])
                 .then((user_res) => {
-                    executeQuery("UPDATE all_order SET is_conform=? WHERE order_id=? AND user_id=?", [1, orderCreationId, user_res[0].user_id])
+                    executeQuery("UPDATE all_order SET is_conform=?, razorpay_order_id=?, razorpay_payment_id=? WHERE order_id=? AND user_id=?", [1, razorpay_order_id, razorpay_payment_id, orderCreationId, user_res[0].user_id])
                         .then(() => {
                             return res.json({ status: true, message: "Payment Successful" });
-                        }).catch((err) => {
+                        }).then(() => {
+                            executeQuery("DELETE FROM user_cart WHERE user_id=?", [user_res[0].user_id]);
+                        }).catch(() => {
                             return res.status(400).json({ status: false, message: "Payment Failed" });
                         })
                 }).catch(() => {
@@ -70,7 +74,7 @@ orderRouter.post('/capture_payment', async(req, res) => {
         };
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ status: false, message: "Failed to make order" });
+        return res.status(500).json({ status: false, message: "Payment Failed" });
     };
 });
 
