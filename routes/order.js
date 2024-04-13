@@ -36,7 +36,7 @@ orderRouter.post('/create_order', async(req, res) => {
                         console.error(error, user_cart_res.total_cost * 100);
                         return res.status(500).json({ message: "Failed to make order" });
                     };
-                    executeQuery("INSERT INTO order (product_list, user_id, order_id, total_cost, user_address, user_meta) VALUES (?, ?, ?, ?, ?, ?)", [user_cart_res[0].product_list, user_res[0].user_id, order.id, user_cart_res[0].total_cost, user_address, user_res[0].meta])
+                    executeQuery("INSERT INTO all_order (product_list, user_id, order_id, total_cost, user_address, user_meta) VALUES (?, ?, ?, ?, ?, ?)", [user_cart_res[0].product_list, user_res[0].user_id, order.id, user_cart_res[0].total_cost, user_address, user_res[0].meta])
                         .then((order_res) => {
                             console.log(user_cart_res[0].product_list, user_res[0].user_id, order.id, user_cart_res[0].total_cost, user_address, user_res[0].meta)
                             return res.status(200).json(order)
@@ -56,7 +56,7 @@ orderRouter.post('/capture_payment', async(req, res) => {
         if (isSignatureValid) {
             executeQuery("SELECT user_id FROM user WHERE token=?", [userToken])
                 .then((user_res) => {
-                    executeQuery("UPDATE order SET is_conform=? WHERE order_id=? AND user_id=?", [1, orderCreationId, user_res[0].user_id])
+                    executeQuery("UPDATE all_order SET is_conform=? WHERE order_id=? AND user_id=?", [1, orderCreationId, user_res[0].user_id])
                         .then((e) => {
                             console.log(e)
                         })
