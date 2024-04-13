@@ -57,11 +57,14 @@ orderRouter.post('/capture_payment', async(req, res) => {
             executeQuery("SELECT user_id FROM user WHERE token=?", [userToken])
                 .then((user_res) => {
                     executeQuery("UPDATE all_order SET is_conform=? WHERE order_id=? AND user_id=?", [1, orderCreationId, user_res[0].user_id])
-                        .then((e) => {
-                            console.log(e)
+                        .then(() => {
+                            return res.json({ status: true, message: "Payment Successful" });
+                        }).catch((err) => {
+                            return res.status(400).json({ status: false, message: "Payment Failed" });
                         })
+                }).catch(() => {
+                    return res.status(400).json({ status: false, message: "Payment Failed" });
                 })
-            res.json({ status: true, message: "Payment Successful" });
         } else {
             return res.status(400).json({ status: false, message: "Payment Failed" });
         };
