@@ -31,7 +31,7 @@ productRouter.get('/new_arrive', (req, res) => {
     executeQuery("SELECT * FROM product ORDER BY id DESC LIMIT 5", [])
         .then((result) => {
             return res.json(result.map((d) => {
-                d.media = JSON.parse(d.media)[0].medium;
+                d.media = JSON.parse(d.media)[0].large;
                 return d;
             }));
         }).catch((error) => {
@@ -232,19 +232,79 @@ productRouter.post('/fetch_media_into_product', (req, res) => {
 
 productRouter.post('/rate', (req, res) => {
     const { rating, user_email, comment, product_id, image } = req.body;
-    executeQuery("INSERT INTO product_rating (rating, user_email, comment, product_id, rating_image) VALUES (?, ?, ?, ?, ?)", [rating, user_email, comment, product_id, image])
-        .then((result) => {
-            return res.json(result)
+    executeQuery("SELECT COUNT(*) as count FROM product_rating WHERE user_email=? AND product_id=?", [user_email, product_id])
+        .then((product_rating_res) => {
+            console.log(product_rating_res, product_rating_res[0].count)
+            if (product_rating_res[0].count >= 1) {
+                return res.json({ status: false, message: "We're glad to hear you've already rated this product." })
+            }
+            executeQuery("INSERT INTO product_rating (rating, user_email, comment, product_id, rating_image) VALUES (?, ?, ?, ?, ?)", [rating, user_email, comment, product_id, image])
+                .then(() => {
+                    return res.json({ status: true })
+                }).catch((error) => {
+                    return res.json(error);
+                });
         }).catch((error) => {
             return res.json(error);
         });
 });
 
+productRouter.delete('/rate', (req, res) => {
+    const { Uo_T_f_0_0 } = req.header;
+    if (Uo_T_f_0_0 === null || Uo_T_f_0_0 === "") {
+        return res.json({ status: false, message: "Unauthorized user" });
+    };
+    const { user_email, product_id } = req.body;
+    executeQuery("DELETE FROM product_rating WHERE user_email=? AND product_id=?", [user_email, product_id])
+        .then(() => {
+            return res.json({ status: true, message: "Review successfully removed." })
+        }).catch((error) => {
+            return res.json({ status: false, message: "Something went wrong!!!" });
+        });
+});
+
+// productRouter.post('/like', (req, res) => {
+//     const { Uo_T_f_0_0 } = req.header;
+//     const { product_id } = req.body;
+//     if (Uo_T_f_0_0 === null || Uo_T_f_0_0 === "") {
+//         return res.json({ status: false, message: "Unauthorized user" });
+//     };
+//     executeQuery("SELECT user_id FROM user WHERE token=?", [Uo_T_f_0_0])
+//         .then((user_res) => {
+//             executeQuery("INSERT INTO product_like (user_id)", [user_email, product_id])
+//                 .then((user_res) => {
+//                     return res.json({ status: true })
+//                 }).catch(() => {
+//                     return res.json({ status: false, message: "Something went wrong!!!" });
+//                 });
+//         }).catch(() => {
+//             return res.json({ status: false, message: "Something went wrong!!!" });
+//         });
+// });
+
+// productRouter.delete('/like', (req, res) => {
+//     const { Uo_T_f_0_0 } = req.header;
+//     const { product_id } = req.body;
+//     if (Uo_T_f_0_0 === null || Uo_T_f_0_0 === "") {
+//         return res.json({ status: false, message: "Unauthorized user" });
+//     };
+//     executeQuery("SELECT user_id FROM user WHERE token=?", [Uo_T_f_0_0])
+//         .then((user_res) => {
+//             executeQuery("DELETE FROM product_like WHERE user_id", [user_res[0].user_id])
+//                 .then((user_res) => {
+//                     return res.json({ status: true })
+//                 }).catch(() => {
+//                     return res.json({ status: false, message: "Something went wrong!!!" });
+//                 });
+//         }).catch(() => {
+//             return res.json({ status: false, message: "Something went wrong!!!" });
+//         });
+// });
+
 productRouter.get('/rate/all/:page', (req, res) => {
-    var page = parseInt(req.params.page) || 0;
-    page = page * 10;
-    const offset = page + 10
-    executeQuery("SELECT product_rating.*, product.name, product.media FROM product_rating JOIN product WHERE product_rating.product_id = product.product_id LIMIT ?, ?", [page, offset])
+    var page = parseInt(req.params.page) || 1;
+    const offset = (page - 1) * 10
+    executeQuery("SELECT product_rating.*, product.name, product.media FROM product_rating JOIN product WHERE product_rating.product_id = product.product_id LIMIT ?, ?", [offset, 10])
         .then((result) => {
             res.json(result.map((d) => {
                 d.media = JSON.parse(d.media)[0].small
@@ -255,6 +315,8 @@ productRouter.get('/rate/all/:page', (req, res) => {
             return res.json(error);
         });
 });
+
+
 
 productRouter.get('/rate/:product_id', (req, res) => {
     const { product_id } = req.params;
