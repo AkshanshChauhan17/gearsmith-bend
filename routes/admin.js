@@ -130,7 +130,34 @@ adminRouter.patch('/action_user/:user_id', (req, res) => {
 adminRouter.get('/all_products', (req, res) => {
     executeQuery("SELECT * FROM product WHERE 1", [])
         .then((result) => {
+            return res.json(result.map((e) => {
+                e.media = JSON.parse(e.media)[0].small;
+                return e;
+            }));
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+adminRouter.delete('/delete_product/:product_id', (req, res) => {
+    const { product_id } = req.params;
+    executeQuery("DELETE FROM product WHERE product_id=?", [product_id])
+        .then((result) => {
             return res.json(result);
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+adminRouter.get('/user/orders/:user_id', (req, res) => {
+    const { user_id } = req.params;
+    executeQuery("SELECT * FROM all_order WHERE user_id=? ORDER BY timestamp DESC", [user_id])
+        .then((result) => {
+            return res.json(result.map((r) => {
+                r.product_list = JSON.parse(r.product_list);
+                r.user_meta = JSON.parse(r.user_meta);
+                return r;
+            }));
         }).catch((error) => {
             return res.json(error);
         });

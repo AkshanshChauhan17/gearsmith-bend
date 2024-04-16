@@ -22,7 +22,7 @@ orderRouter.get('/user/:token', (req, res) => {
     const { token } = req.params;
     executeQuery("SELECT user_id FROM user WHERE token=?", [token])
         .then((user_res) => {
-            executeQuery("SELECT * FROM all_order WHERE user_id=?", [user_res[0].user_id])
+            executeQuery("SELECT * FROM all_order WHERE user_id=? ORDER BY timestamp DESC", [user_res[0].user_id])
                 .then((order_res) => {
                     res.json(order_res);
                 }).catch((err) => {

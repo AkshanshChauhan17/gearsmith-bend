@@ -54,7 +54,7 @@ function createUser(email, password, meta, token) {
 function verifyToken(email, password) {
     return new Promise((resolve, reject) => {
         executeQuery("SELECT email, meta, is_admin FROM user WHERE email=? AND password=?", [email, password])
-            .then((result) => resolve({ message: 'Authorized', result }))
+            .then((result) => resolve({ message: result.length === 0 ? 'Unauthorized' : 'Authorized', result }))
             .catch((error) => reject(error));
     });
 }

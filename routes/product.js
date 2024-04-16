@@ -39,6 +39,19 @@ productRouter.get('/new_arrive', (req, res) => {
         });
 });
 
+productRouter.get('/user/:product_id', (req, res) => {
+    const { product_id } = req.params;
+    executeQuery("SELECT * FROM product WHERE product_id=?", [product_id])
+        .then((result) => {
+            return res.json(result.map((d) => {
+                d.media = JSON.parse(d.media)[0].small;
+                return d;
+            }));
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
 productRouter.get('/:product_id', (req, res) => {
     const { product_id } = req.params;
     executeQuery("SELECT * FROM product WHERE product_id=?", [product_id])
