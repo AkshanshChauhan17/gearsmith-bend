@@ -176,6 +176,16 @@ adminRouter.get('/all_orders', (req, res) => {
         });
 });
 
+adminRouter.delete('/delete_order/:order_id', (req, res) => {
+    const { order_id } = req.params;
+    executeQuery("DELETE FROM all_order WHERE order_id=?", [product_id])
+        .then((result) => {
+            return res.json(result);
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
 adminRouter.get('/all_reviews', (req, res) => {
     executeQuery("SELECT * FROM product_review WHERE 1", [])
         .then((result) => {
