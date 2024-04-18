@@ -139,9 +139,48 @@ adminRouter.get('/all_products', (req, res) => {
         });
 });
 
+adminRouter.get('/one_product/:id', (req, res) => {
+    const { id } = req.params;
+    executeQuery("SELECT * FROM product WHERE id=?", [id])
+        .then((result) => {
+            return res.json(result.map((e) => {
+                e.media = JSON.parse(e.media)[0].medium;
+                e.discount = Math.round(((e.previous_price - e.price) / e.previous_price) * 100) + "%";
+                return e;
+            }));
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+adminRouter.get('/inner_one_product/:product_id', (req, res) => {
+    const { product_id } = req.params;
+    executeQuery("SELECT * FROM product WHERE product_id=?", [product_id])
+        .then((result) => {
+            return res.json(result.map((e) => {
+                e.media = JSON.parse(e.media)[0].small;
+                e.discount = Math.round(((e.previous_price - e.price) / e.previous_price) * 100) + "%";
+                return e;
+            }));
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
 adminRouter.delete('/delete_product/:product_id', (req, res) => {
     const { product_id } = req.params;
     executeQuery("DELETE FROM product WHERE product_id=?", [product_id])
+        .then((result) => {
+            return res.json(result);
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+adminRouter.patch('/edit_product', (req, res) => {
+    const { product_id, name, is_available, new_price, previous_price } = req.body;
+    console.log(req.body)
+    executeQuery("UPDATE product SET name=?, is_available=?, price=?, previous_price=? WHERE product_id=?", [name, is_available, new_price, previous_price, product_id])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
@@ -163,8 +202,35 @@ adminRouter.get('/user/orders/:user_id', (req, res) => {
         });
 });
 
-adminRouter.get('/all_orders', (req, res) => {
+adminRouter.get('/home/all_orders', (req, res) => {
     executeQuery("SELECT * FROM all_order ORDER BY timestamp DESC LIMIT 10", [])
+        .then((result) => {
+            return res.json(result.map((r) => {
+                r.product_list = JSON.parse(r.product_list);
+                r.user_meta = JSON.parse(r.user_meta);
+                return r;
+            }));
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+adminRouter.get('/all_orders', (req, res) => {
+    executeQuery("SELECT * FROM all_order ORDER BY timestamp DESC", [])
+        .then((result) => {
+            return res.json(result.map((r) => {
+                r.product_list = JSON.parse(r.product_list);
+                r.user_meta = JSON.parse(r.user_meta);
+                return r;
+            }));
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+adminRouter.get('/one_order/:id', (req, res) => {
+    const { id } = req.params;
+    executeQuery("SELECT * FROM all_order WHERE id=?", [id])
         .then((result) => {
             return res.json(result.map((r) => {
                 r.product_list = JSON.parse(r.product_list);
@@ -178,7 +244,7 @@ adminRouter.get('/all_orders', (req, res) => {
 
 adminRouter.delete('/delete_order/:order_id', (req, res) => {
     const { order_id } = req.params;
-    executeQuery("DELETE FROM all_order WHERE order_id=?", [product_id])
+    executeQuery("DELETE FROM all_order WHERE order_id=?", [order_id])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
