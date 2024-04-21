@@ -210,5 +210,17 @@ userRouter.delete('/remove_all_from_cart', (req, res) => {
         });
 });
 
+userRouter.get('/search', (req, res) => {
+    const { q } = req.query;
+    if (q === '' || q === null) {
+        return res.json([])
+    }
+    executeQuery(`SELECT price, name, product_id FROM product WHERE name LIKE '%${q}%' OR price LIKE '%${q}%'`, [])
+        .then((result) => {
+            return res.json(result);
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
 
 export default userRouter;

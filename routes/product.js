@@ -14,7 +14,8 @@ productRouter.get('/', async(req, res) => {
             .then((result) => {
                 return res.json({
                     data: result.map((d) => {
-                        d.media = JSON.parse(d.media)[0].medium
+                        d.media = JSON.parse(d.media)[0].medium;
+                        d.discount = Math.round(((d.previous_price - d.price) / d.previous_price) * 100) + "%";
                         return d
                     }),
                     total: Math.round(total.length / page_size)
@@ -45,6 +46,7 @@ productRouter.get('/user/:product_id', (req, res) => {
         .then((result) => {
             return res.json(result.map((d) => {
                 d.media = JSON.parse(d.media)[0].small;
+                d.discount = Math.round(((d.previous_price - d.price) / d.previous_price) * 100) + "%";
                 return d;
             }));
         }).catch((error) => {
@@ -56,7 +58,10 @@ productRouter.get('/:product_id', (req, res) => {
     const { product_id } = req.params;
     executeQuery("SELECT * FROM product WHERE product_id=?", [product_id])
         .then((result) => {
-            return res.json(...result);
+            return res.json(...result.map((d) => {
+                d.discount = Math.round(((d.previous_price - d.price) / d.previous_price) * 100) + "%";
+                return d;
+            }));
         }).catch((error) => {
             return res.json(error);
         });
@@ -317,7 +322,7 @@ productRouter.delete('/rate', (req, res) => {
 productRouter.get('/rate/all/:page', (req, res) => {
     var page = parseInt(req.params.page) || 1;
     const offset = (page - 1) * 10
-    executeQuery("SELECT product_rating.*, product.name, product.media FROM product_rating JOIN product WHERE product_rating.product_id = product.product_id LIMIT ?, ?", [offset, 10])
+    executeQuery("SELECT product_rating.*, product.name, product.media FROM product_rating JOIN product WHERE product_rating.product_id = product.product_id ORDER BY rating_timestamp DESC LIMIT ?, ?", [offset, 10])
         .then((result) => {
             res.json(result.map((d) => {
                 d.media = JSON.parse(d.media)[0].small
@@ -333,7 +338,7 @@ productRouter.get('/rate/all/:page', (req, res) => {
 
 productRouter.get('/rate/:product_id', (req, res) => {
     const { product_id } = req.params;
-    executeQuery("SELECT * FROM product_rating WHERE product_id=?", [product_id])
+    executeQuery("SELECT * FROM product_rating WHERE product_id=? ORDER BY rating_timestamp DESC", [product_id])
         .then((result) => {
             return res.json(result)
         }).catch((error) => {
