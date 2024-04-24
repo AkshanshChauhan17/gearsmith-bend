@@ -223,4 +223,13 @@ userRouter.get('/search', (req, res) => {
         });
 });
 
+userRouter.post('/create_bill', (req, res) => {
+    executeQuery("INSERT INTO user_cart (email, product_id, quantity) VALUES (?, ?, ?)", [email, product_id, quantity])
+        .then((result) => {
+            return res.json(result);
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
 export default userRouter;
