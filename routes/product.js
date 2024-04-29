@@ -134,9 +134,9 @@ productRouter.delete('/remove_from_cart', (req, res) => {
 
 productRouter.post('/add_product', (req, res) => {
     const product_id = uuidV4();
-    const { name, media, price, color_list, size_list, product_summary } = req.body;
+    const { name, media, price, color_list, size_list, product_summary, size_table, detail, disclaimer } = req.body;
 
-    executeQuery("INSERT INTO product (name, media, price, product_id, color_list, size_list, product_summary) VALUES (?, ?, ?, ?, ?, ?, ?)", [name, JSON.stringify(media), price, product_id, JSON.stringify(color_list), JSON.stringify(size_list), product_summary])
+    executeQuery("INSERT INTO product (name, media, price, product_id, color_list, size_list, product_summary, size_table, detail, disclaimer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [name, JSON.stringify(media), price, product_id, JSON.stringify(color_list), JSON.stringify(size_list), product_summary, JSON.stringify(size_table), detail, disclaimer])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
