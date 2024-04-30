@@ -7,8 +7,8 @@ import executeQuery from '../database/query.js';
 const orderRouter = express.Router();
 
 var razorpay = new Razorpay({
-    key_id: 'rzp_test_cWx0FiWY7TRc5L',
-    key_secret: 'gN0nw15ZrNyfFIS7L2NrcQbm'
+    key_id: 'rzp_live_rs6UWRJ2Auh5hC',
+    key_secret: 'X1bC8RNgGZ97W6YYMBu5u5pz'
 });
 
 function verifySignature(signature, secret, payload) {
