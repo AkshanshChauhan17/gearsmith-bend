@@ -73,7 +73,7 @@ orderRouter.post('/capture_payment', async(req, res) => {
     const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
 
     try {
-        const isSignatureValid = verifySignature(razorpay_signature, 'gN0nw15ZrNyfFIS7L2NrcQbm', payload);
+        const isSignatureValid = verifySignature(razorpay_signature, 'X1bC8RNgGZ97W6YYMBu5u5pz', payload);
         if (isSignatureValid) {
             executeQuery("SELECT user_id FROM user WHERE token=?", [userToken])
                 .then((user_res) => {
@@ -82,11 +82,13 @@ orderRouter.post('/capture_payment', async(req, res) => {
                             return res.json({ status: true, message: "Payment Successful" });
                         }).then(() => {
                             executeQuery("DELETE FROM user_cart WHERE user_id=?", [user_res[0].user_id]);
-                        }).catch(() => {
-                            return res.status(400).json({ status: false, message: "Payment Failed" });
+                        }).catch((err) => {
+                            console.log(err)
+                            return res.status(400).json({ status: false, message: "Payment Failed" + err });
                         })
-                }).catch(() => {
-                    return res.status(400).json({ status: false, message: "Payment Failed" });
+                }).catch((err) => {
+                    console.log(err)
+                    return res.status(400).json({ status: false, message: "Payment Failed" + err });
                 })
         } else {
             return res.status(400).json({ status: false, message: "Payment Failed" });
