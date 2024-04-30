@@ -139,6 +139,7 @@ adminRouter.get('/all_products', (req, res) => {
         });
 });
 
+
 adminRouter.get('/one_product/:id', (req, res) => {
     const { id } = req.params;
     executeQuery("SELECT * FROM product WHERE id=?", [id])
@@ -146,6 +147,19 @@ adminRouter.get('/one_product/:id', (req, res) => {
             return res.json(result.map((e) => {
                 e.media = JSON.parse(e.media)[0].medium;
                 e.discount = Math.round(((e.previous_price - e.price) / e.previous_price) * 100) + "%";
+                return e;
+            }));
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+adminRouter.get('/one_product_edit/:id', (req, res) => {
+    const { id } = req.params;
+    executeQuery("SELECT product.* FROM product WHERE id=?", [id])
+        .then((result) => {
+            return res.json(result.map((e) => {
+                e.media = JSON.parse(e.media);
                 return e;
             }));
         }).catch((error) => {
@@ -179,8 +193,18 @@ adminRouter.delete('/delete_product/:product_id', (req, res) => {
 
 adminRouter.patch('/edit_product', (req, res) => {
     const { product_id, name, is_available, new_price, previous_price } = req.body;
-    console.log(req.body)
     executeQuery("UPDATE product SET name=?, is_available=?, price=?, previous_price=? WHERE product_id=?", [name, is_available, new_price, previous_price, product_id])
+        .then((result) => {
+            return res.json(result);
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+adminRouter.patch('/edit_inner_product', (req, res) => {
+    const { summary, color_list, size_list, size_table, detail, disclaimer, media, product_id } = req.body;
+    console.log(color_list)
+    executeQuery("UPDATE product SET product_summary=?, size_list=?, color_list=?, size_table=?, detail=?, disclaimer=?, media=? WHERE product_id=?", [summary, size_list, color_list, size_table, detail, disclaimer, media, product_id])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
