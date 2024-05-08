@@ -130,7 +130,10 @@ adminRouter.patch('/action_user/:user_id', (req, res) => {
 adminRouter.get('/all_products', (req, res) => {
     executeQuery("SELECT * FROM product WHERE 1", [])
         .then((result) => {
-            return res.json(result);
+            return res.json(result.map((e) => {
+                e.media = JSON.parse(e.media)[0].small;
+                return e;
+            }));
         }).catch((error) => {
             return res.json(error);
         });
