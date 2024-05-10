@@ -133,7 +133,7 @@ userRouter.post('/signin', async(req, res) => {
 
         res.status(200).json({ message: 'User registered successfully', token: token });
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error', error: error });
+        res.status(500).json({ message: 'Internal Server Error _>' + error, error: error });
     }
 })
 
