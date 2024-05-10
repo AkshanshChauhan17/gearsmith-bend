@@ -57,7 +57,7 @@ function verifyToken(email, password) {
             .then((result) => resolve({ message: result.length === 0 ? 'Unauthorized' : 'Authorized', result }))
             .catch((error) => reject(error));
     });
-}
+};
 
 function authenticateToken(req, res, next) {
     const token = req.headers['authorization'];
@@ -131,10 +131,9 @@ userRouter.post('/signin', async(req, res) => {
         const token = jwt.sign({ email: email, password: hashedPassword }, 'my_key_1000', { expiresIn: '24h' });
         await createUser(email, hashedPassword, meta, token);
 
-        res.status(201).json({ message: 'User registered successfully', token: token });
+        res.status(200).json({ message: 'User registered successfully', token: token });
     } catch (error) {
-        console.error('Error registering user: ', error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        res.status(500).json({ message: 'Internal Server Error', error: error });
     }
 })
 
@@ -232,4 +231,5 @@ userRouter.post('/create_bill', (req, res) => {
         });
 });
 
+export default userRouter;
 export default userRouter;
