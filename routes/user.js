@@ -115,7 +115,7 @@ userRouter.post('/login', (req, res) => {
 })
 
 userRouter.post('/signin', async(req, res) => {
-    const { email, password, meta } = req.body;
+    const { email, password, meta, user_address } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ message: "Username and Password are Required" });
@@ -231,5 +231,4 @@ userRouter.post('/create_bill', (req, res) => {
         });
 });
 
-export default userRouter;
 export default userRouter;
