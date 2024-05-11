@@ -1,16 +1,16 @@
-import express from 'express';
-import cors from 'cors';
+const express = require('express');
+const cors = require('cors');
 
-import userRouter from './routes/user.js';
-import navigationRouter from './routes/navigation.js';
-import productRouter from './routes/product.js';
-import mediaRouter from './routes/media.js';
-import path from 'path';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import reviewRouter from './routes/review.js';
-import orderRouter from './routes/order.js';
-import adminRouter from './routes/admin.js';
+const userRouter = require('./routes/user.js');
+const navigationRouter = require('./routes/navigation.js');
+const productRouter = require('./routes/product.js');
+const mediaRouter = require('./routes/media.js');
+const path = require('path');
+const { dirname } = require('path');
+const { fileURLToPath } = require('url');
+const reviewRouter = require('./routes/review.js');
+const orderRouter = require('./routes/order.js');
+const adminRouter = require('./routes/admin.js');
 
 var api = express();
 
@@ -31,6 +31,4 @@ api.use('/review', reviewRouter);
 api.use('/order', orderRouter);
 api.use('/admin', adminRouter);
 
-api.listen(1000, () => {
-    console.log('Server Started At 1000');
-});
+api.listen();

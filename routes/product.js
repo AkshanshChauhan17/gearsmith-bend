@@ -1,7 +1,8 @@
-import executeQuery from "../database/query.js";
-import express from "express";
-import { v4 as uuidV4 } from "uuid";
-import multer from "multer";
+const executeQuery = require("../database/query.js");
+const express = require("express");
+const { v4 } = require("uuid");
+const uuidV4 = v4;
+const multer = require("multer");
 
 const productRouter = express.Router();
 

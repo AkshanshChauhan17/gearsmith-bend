@@ -1,8 +1,8 @@
-import Razorpay from 'razorpay';
-import express from 'express';
-import { v4 } from 'uuid';
-import crypto from 'crypto';
-import executeQuery from '../database/query.js';
+const Razorpay = require('razorpay');
+const express = require("express");
+const { v4 } = require('uuid');
+const crypto = require('crypto');
+const executeQuery = require('../database/query.js');
 
 const orderRouter = express.Router();
 

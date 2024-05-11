@@ -1,6 +1,6 @@
-import express from "express";
-import sharp from "sharp";
-import fs from "fs";
+const express = require("express");
+const sharp = require("sharp");
+const fs = require("fs");
 
 const mediaRouter = express.Router();
 

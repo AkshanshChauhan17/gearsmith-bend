@@ -1,4 +1,4 @@
-import connection from './connection.js';
+const connection = require('./connection.js');
 
 export default function executeQuery(sql, params = []) {
     return new Promise((resolve, reject) => {

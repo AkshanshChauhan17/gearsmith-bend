@@ -1,9 +1,9 @@
-import executeQuery from '../database/query.js';
-import express from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { v4 as uuidV4 } from 'uuid';
-
+const executeQuery = require('../database/query.js');
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const v4 = require('uuid');
+const uuidV4 = v4;
 const userRouter = express.Router();
 
 function base64ToBlob(base64String, contentType) {

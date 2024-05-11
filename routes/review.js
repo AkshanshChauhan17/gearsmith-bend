@@ -1,5 +1,5 @@
-import executeQuery from '../database/query.js';
-import express from 'express';
+const executeQuery = require('../database/query.js');
+const express = require("express");
 const reviewRouter = express.Router();
 
 reviewRouter.get('/', (req, res) => {
