@@ -11,4 +11,4 @@ reviewRouter.get('/', (req, res) => {
         });
 });
 
-export default reviewRouter;
+module.exports = reviewRouter;

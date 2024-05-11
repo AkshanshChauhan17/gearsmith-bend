@@ -34,4 +34,4 @@ mediaRouter.get('/image', async(req, res) => {
     }
 });
 
-export default mediaRouter;
+module.exports = mediaRouter;

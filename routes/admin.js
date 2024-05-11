@@ -284,4 +284,4 @@ adminRouter.get('/all_reviews', (req, res) => {
         });
 });
 
-export default adminRouter;
+module.exports = adminRouter;

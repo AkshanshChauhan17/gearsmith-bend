@@ -382,4 +382,4 @@ productRouter.get('/rate/percentage/:product_id', (req, res) => {
         });
 });
 
-export default productRouter;
+module.exports = productRouter;

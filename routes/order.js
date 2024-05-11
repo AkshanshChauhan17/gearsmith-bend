@@ -117,4 +117,4 @@ orderRouter.get('/checkout/', (req, res) => {
         });
 });
 
-export default orderRouter;
+module.exports = orderRouter;

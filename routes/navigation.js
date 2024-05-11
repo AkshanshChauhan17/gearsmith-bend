@@ -12,4 +12,4 @@ navigationRouter.get('/', (req, res) => {
         });
 });
 
-export default navigationRouter;
+module.exports = navigationRouter;
