@@ -9,4 +9,4 @@ var connection = mysql.createPool({
     connectionLimit: 1000
 });
 
-export default connection;
+module.exports = connection;
