@@ -1,6 +1,6 @@
 const connection = require('./connection.js');
 
-export default function executeQuery(sql, params = []) {
+function executeQuery(sql, params = []) {
     return new Promise((resolve, reject) => {
         connection.query(sql, params, (error, results, fields) => {
             if (error) {
@@ -12,3 +12,5 @@ export default function executeQuery(sql, params = []) {
         });
     });
 };
+
+module.exports = executeQuery;
