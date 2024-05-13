@@ -3,6 +3,7 @@ const express = require("express");
 const { v4 } = require("uuid");
 const uuidV4 = v4;
 const multer = require("multer");
+const fs = require("fs");
 
 const productRouter = express.Router();
 
@@ -15,7 +16,7 @@ productRouter.get('/', async(req, res) => {
             .then((result) => {
                 return res.json({
                     data: result.map((d) => {
-                        d.media = JSON.parse(d.media)[0].medium;
+                        d.media = String(JSON.parse(d.media)[0]);
                         d.discount = Math.round(((d.previous_price - d.price) / d.previous_price) * 100) + "%";
                         return d
                     }),
@@ -33,7 +34,7 @@ productRouter.get('/new_arrive', (req, res) => {
     executeQuery("SELECT * FROM product ORDER BY id DESC LIMIT 5", [])
         .then((result) => {
             return res.json(result.map((d) => {
-                d.media = JSON.parse(d.media)[0].large;
+                d.media = String(JSON.parse(d.media)[0]) + "?r=500"
                 return d;
             }));
         }).catch((error) => {
@@ -46,7 +47,7 @@ productRouter.get('/user/:product_id', (req, res) => {
     executeQuery("SELECT * FROM product WHERE product_id=?", [product_id])
         .then((result) => {
             return res.json(result.map((d) => {
-                d.media = JSON.parse(d.media)[0].small;
+                d.media = JSON.parse(d.media);
                 d.discount = Math.round(((d.previous_price - d.price) / d.previous_price) * 100) + "%";
                 return d;
             }));
@@ -133,11 +134,34 @@ productRouter.delete('/remove_from_cart', (req, res) => {
         });
 });
 
-productRouter.post('/add_product', (req, res) => {
-    const product_id = uuidV4();
-    const { name, media, price, color_list, size_list, product_summary, size_table, detail, disclaimer } = req.body;
+const setProductId = (req, res, next) => {
+    req.product_id = uuidV4();
+    next();
+};
 
-    executeQuery("INSERT INTO product (name, media, price, product_id, color_list, size_list, product_summary, size_table, detail, disclaimer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [name, JSON.stringify(media), price, product_id, JSON.stringify(color_list), JSON.stringify(size_list), product_summary, JSON.stringify(size_table), detail, disclaimer])
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        const product_id = req.product_id;
+        const productFolderPath = `upload/product/media/${product_id}/`;
+        fs.mkdirSync(productFolderPath, { recursive: true });
+        cb(null, productFolderPath);
+    },
+    filename: function(req, file, cb) {
+        console.log(file.originalname)
+        cb(null, file.originalname)
+    }
+})
+
+const upload = multer({ storage: storage, limits: { fileSize: 1024 * 1024 * 300 } });
+
+productRouter.post('/add_product', setProductId, upload.array('imageFiles'), (req, res) => {
+    const { name, price, color_list, size_list, product_summary, size_table, detail, disclaimer, imageFiles } = req.body;
+    const media = []
+    const product_id = req.product_id;
+    req.files.map((file, index) => {
+        media.push(`media/image/product/${product_id}/${index}`)
+    })
+    executeQuery("INSERT INTO product (name, media, price, product_id, color_list, size_list, product_summary, size_table, detail, disclaimer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [name, JSON.stringify(media), price, product_id, color_list, size_list, product_summary, size_table, detail, disclaimer])
         .then((result) => {
             return res.json(result);
         }).catch((error) => {
@@ -171,18 +195,6 @@ productRouter.patch('/edit_product', (req, res) => {
             return res.json(error);
         });
 });
-
-
-const storage = multer.diskStorage({
-    destination: function(req, file, callback) {
-        callback(null, "upload/product/media/");
-    },
-    filename: function(req, file, callback) {
-        callback(null, uuidV4() + ".jpg");
-    }
-});
-
-const upload = multer({ storage: storage, limits: { fileSize: 1024 * 1024 * 300 } });
 
 productRouter.post('/add_product_image', upload.single('image'), (req, res) => {
     const { product_name, product_id } = req.body;
@@ -250,14 +262,14 @@ productRouter.post('/fetch_media_into_product', (req, res) => {
 });
 
 productRouter.post('/rate', (req, res) => {
-    const { rating, user_email, comment, product_id, image } = req.body;
+    const { rating, user_email, comment, product_id } = req.body;
     executeQuery("SELECT COUNT(*) as count FROM product_rating WHERE user_email=? AND product_id=?", [user_email, product_id])
         .then((product_rating_res) => {
             console.log(product_rating_res, product_rating_res[0].count)
             if (product_rating_res[0].count >= 1) {
                 return res.json({ status: false, message: "We're glad to hear you've already rated this product." })
             }
-            executeQuery("INSERT INTO product_rating (rating, user_email, comment, product_id, rating_image) VALUES (?, ?, ?, ?, ?)", [rating, user_email, comment, product_id, image])
+            executeQuery("INSERT INTO product_rating (rating, user_email, comment, product_id, rating_image) VALUES (?, ?, ?, ?, ?)", [rating, user_email, comment, product_id, "media/image/user/" + user_email + "?width=100&height=100"])
                 .then(() => {
                     return res.json({ status: true })
                 }).catch((error) => {
@@ -326,8 +338,8 @@ productRouter.get('/rate/all/:page', (req, res) => {
     executeQuery("SELECT product_rating.*, product.name, product.media FROM product_rating JOIN product WHERE product_rating.product_id = product.product_id ORDER BY rating_timestamp DESC LIMIT ?, ?", [offset, 10])
         .then((result) => {
             res.json(result.map((d) => {
-                d.media = JSON.parse(d.media)[0].small
-                d.count = result.length
+                d.media = String(JSON.parse(d.media)[0]) + "?r=100";
+                d.count = result.length;
                 return d
             }))
         }).catch((error) => {

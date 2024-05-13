@@ -4,34 +4,32 @@ const fs = require("fs");
 
 const mediaRouter = express.Router();
 
+mediaRouter.get('/image/user/:email', (req, res) => {
+    const { email } = req.params;
+    const { width, height } = req.query;
 
-async function resizeImageToBase64(imagePath, width, height) {
-    const imageBuffer = fs.readFileSync(imagePath);
-    const resizedImageBuffer = await sharp(imageBuffer)
-        .resize(width, height)
-        .toBuffer();
-    return resizedImageBuffer.toString('base64');
-}
+    const image = sharp(`upload/user/media/${email}/profile_image.jpg`);
 
-mediaRouter.get('/image', async(req, res) => {
-    const { image_path } = req.query;
-    try {
-        const resolutions = [
-            { width: 100, height: 100 },
-            { width: 500, height: 500 },
-            { width: 1000, height: 1000 }
-        ];
-
-        const resizedImagesBase64 = await Promise.all(resolutions.map(async(resolution) => {
-            const base64Image = await resizeImageToBase64(image_path, resolution.width, resolution.height);
-            return { resolution: `${resolution.width}x${resolution.height}`, base64: "data:image/jpeg;base64," + base64Image };
-        }));
-
-        res.json({ images: resizedImagesBase64 });
-    } catch (error) {
-        console.error('Error processing image request:', error);
-        res.status(500).json({ error: 'Internal server error' });
+    if (width && height) {
+        image.resize(Number(width), Number(height));
     }
+    res.set('Content-Type', 'image/jpeg');
+
+    image.pipe(res);
+});
+
+mediaRouter.get('/image/product/:product_id/:number', (req, res) => {
+    const { product_id, number } = req.params;
+    const { r } = req.query;
+
+    const image = sharp(`upload/product/media/${product_id}/product_image_${number}.jpg`);
+
+    if (r) {
+        image.resize(Number(r), null);
+    }
+    res.set('Content-Type', 'image/jpeg');
+
+    image.pipe(res);
 });
 
 module.exports = mediaRouter;

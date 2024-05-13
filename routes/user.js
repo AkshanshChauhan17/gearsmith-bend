@@ -2,9 +2,25 @@ const executeQuery = require('../database/query.js');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const v4 = require('uuid');
+const { v4 } = require('uuid');
 const uuidV4 = v4;
 const userRouter = express.Router();
+const multer = require('multer');
+const fs = require('fs');
+
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        const userId = req.body.product_id;
+        const userFolderPath = `upload/user/media/${userId}/`;
+        fs.mkdirSync(userFolderPath, { recursive: true });
+        cb(null, userFolderPath);
+    },
+    filename: function(req, file, cb) {
+        cb(null, "profile_image.jpg")
+    }
+});
+
+const upload = multer({ storage: storage });
 
 function base64ToBlob(base64String, contentType) {
     const parts = base64String.split(';base64,');
@@ -114,8 +130,9 @@ userRouter.post('/login', (req, res) => {
         });
 })
 
-userRouter.post('/signin', async(req, res) => {
+userRouter.post('/signin', upload.single('image'), async(req, res) => {
     const { email, password, meta, user_address } = req.body;
+    console.log(JSON.stringify(req.body))
 
     if (!email || !password) {
         return res.status(400).json({ message: "Username and Password are Required" });
@@ -133,7 +150,7 @@ userRouter.post('/signin', async(req, res) => {
 
         res.status(200).json({ message: 'User registered successfully', token: token });
     } catch (error) {
-        res.status(500).json({ message: 'Internal Server Error _>' + error, error: error });
+        res.status(500).json({ message: 'Internal Server Error ' + error, error: error });
     }
 })
 
