@@ -10,7 +10,7 @@ const fs = require('fs');
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        const userId = req.body.product_id;
+        const userId = req.body.email;
         const userFolderPath = `upload/user/media/${userId}/`;
         fs.mkdirSync(userFolderPath, { recursive: true });
         cb(null, userFolderPath);
@@ -61,7 +61,7 @@ function getUserByEmail(email) {
 function createUser(email, password, meta, token) {
     const user_id = uuidV4();
     return new Promise((resolve, reject) => {
-        executeQuery('INSERT INTO user (email, password, meta, token, user_id) VALUES (?, ?, ?, ?, ?)', [email, password, JSON.stringify(meta), token, user_id])
+        executeQuery('INSERT INTO user (email, password, meta, token, user_id, profile_image) VALUES (?, ?, ?, ?, ?, ?)', [email, password, meta, token, user_id, `media/image/user/${email}`])
             .then((result) => resolve(result))
             .catch((error) => reject(error));
     });
@@ -111,7 +111,6 @@ userRouter.post('/login', (req, res) => {
                 return res.status(400).json({ loginStatus: false, message: 'No User Found with ' + email + ' Please Register' });
             }
             const passwordMatch = await bcrypt.compare(password, result[0].password);
-            console.log(passwordMatch)
             if (!passwordMatch) {
                 return res.status(401).json({ loginStatus: false, message: 'Invalid Username and Password' });
             }
@@ -132,7 +131,6 @@ userRouter.post('/login', (req, res) => {
 
 userRouter.post('/signin', upload.single('image'), async(req, res) => {
     const { email, password, meta, user_address } = req.body;
-    console.log(JSON.stringify(req.body))
 
     if (!email || !password) {
         return res.status(400).json({ message: "Username and Password are Required" });

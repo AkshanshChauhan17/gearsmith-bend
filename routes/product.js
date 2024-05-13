@@ -34,7 +34,7 @@ productRouter.get('/new_arrive', (req, res) => {
     executeQuery("SELECT * FROM product ORDER BY id DESC LIMIT 5", [])
         .then((result) => {
             return res.json(result.map((d) => {
-                d.media = String(JSON.parse(d.media)[0]) + "?r=500"
+                d.media = String(JSON.parse(d.media)[0])
                 return d;
             }));
         }).catch((error) => {
@@ -51,6 +51,15 @@ productRouter.get('/user/:product_id', (req, res) => {
                 d.discount = Math.round(((d.previous_price - d.price) / d.previous_price) * 100) + "%";
                 return d;
             }));
+        }).catch((error) => {
+            return res.json(error);
+        });
+});
+
+productRouter.get('/top_3_rated_products', (req, res) => {
+    executeQuery("SELECT product_id, AVG(rating) AS avg_rating, COUNT(*) AS rating_number FROM product_rating GROUP BY product_id ORDER BY avg_rating DESC LIMIT 3", [])
+        .then((result) => {
+            return res.json(result);
         }).catch((error) => {
             return res.json(error);
         });
@@ -74,7 +83,7 @@ productRouter.get('/cart/:product_id', (req, res) => {
     executeQuery("SELECT * FROM product WHERE product_id=?", [product_id])
         .then((result) => {
             return res.json(result.map((d) => {
-                d.media = JSON.parse(d.media)[0].small
+                d.media = JSON.parse(d.media)[0]
                 return d
             }));
         }).catch((error) => {
@@ -269,7 +278,7 @@ productRouter.post('/rate', (req, res) => {
             if (product_rating_res[0].count >= 1) {
                 return res.json({ status: false, message: "We're glad to hear you've already rated this product." })
             }
-            executeQuery("INSERT INTO product_rating (rating, user_email, comment, product_id, rating_image) VALUES (?, ?, ?, ?, ?)", [rating, user_email, comment, product_id, "media/image/user/" + user_email + "?width=100&height=100"])
+            executeQuery("INSERT INTO product_rating (rating, user_email, comment, product_id, rating_image) VALUES (?, ?, ?, ?, ?)", [rating, user_email, comment, product_id, "media/image/user/" + user_email])
                 .then(() => {
                     return res.json({ status: true })
                 }).catch((error) => {
@@ -338,7 +347,7 @@ productRouter.get('/rate/all/:page', (req, res) => {
     executeQuery("SELECT product_rating.*, product.name, product.media FROM product_rating JOIN product WHERE product_rating.product_id = product.product_id ORDER BY rating_timestamp DESC LIMIT ?, ?", [offset, 10])
         .then((result) => {
             res.json(result.map((d) => {
-                d.media = String(JSON.parse(d.media)[0]) + "?r=100";
+                d.media = String(JSON.parse(d.media)[0]);
                 d.count = result.length;
                 return d
             }))

@@ -1,4 +1,4 @@
-const Razorpay = require('razorpay');
+var Razorpay = require("razorpay");
 const express = require("express");
 const { v4 } = require('uuid');
 const crypto = require('crypto');
@@ -36,7 +36,7 @@ orderRouter.get('/user/:token', (req, res) => {
 orderRouter.post('/create_order', async(req, res) => {
     const { userToken, user_address } = req.body;
     var receipt = v4();
-    await executeQuery("SELECT user_id, meta FROM user WHERE token=?", [userToken])
+    await executeQuery("SELECT user_id, meta, profile_image FROM user WHERE token=?", [userToken])
         .then(async(user_res) => {
             await executeQuery("SELECT SUM(price * quantity) AS total_cost, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('product_id', product_id, 'quantity', quantity, 'price', price)), ']') AS product_list FROM user_cart WHERE user_id=?", [user_res[0].user_id])
                 .then(async(user_cart_res) => {
@@ -71,7 +71,6 @@ orderRouter.post('/create_order', async(req, res) => {
 orderRouter.post('/capture_payment', async(req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, userToken, orderCreationId } = req.body;
     const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
-
     try {
         const isSignatureValid = verifySignature(razorpay_signature, 'X1bC8RNgGZ97W6YYMBu5u5pz', payload);
         if (isSignatureValid) {
